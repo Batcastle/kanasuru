@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.12
 #
 #  common.py
 #  
@@ -19,5 +19,42 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #  
-#  
+#
+import json
+import os
+
+
 VERSION: str = "0.0.1-DEV"
+HELP: str = """
+-h, --help           Print this help message and exit
+    --inside-venv    Run inside existing venv
+    --setup-venv     Setup venv and exit
+-v, --version        Print version and exit
+"""
+# DEFAULT SETTINGS
+VENV_NAME: str = "venv"
+SETTINGS: dict = {}
+
+
+def load_settings() -> dict:
+	"""
+	Load settings
+	"""
+	global SETTINGS, VENV_NAME
+	if os.path.exists("settings.json"):
+		with open("settings.json", "r") as file:
+			SETTINGS = json.load(file)
+	if "VENV_NAME" in SETTINGS:
+		VENV_NAME = SETTINGS["VENV"]
+	else:
+		SETTINGS["VENV"] = VENV_NAME
+	if not os.path.exists("settings.json"):
+		save_settings()
+	
+
+def save_settings():
+	"""
+	Save settings to disk
+	"""
+	with open("settings.json", "w+") as file:
+		json.dump(SETTINGS, file, indent=2)

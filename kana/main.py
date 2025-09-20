@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.12
 #
 #  main.py
 #
@@ -23,19 +23,21 @@
 # External imports
 import os
 import json
-import cairo
+import time
 
 #internal imports
 import kana.common as common
 
 
-KANA = {"KANA": {}, "KANJI": {}, "META": {"GRAPHICS": [], "DICT": []}}
+KANA: dict = {"KANA": {}, "KANJI": {}, "META": {"GRAPHICS": {}, "DICT": {}}}
 
 
-def init():
-	print("Welcome to KanaSuru (かなする)!")
-	print(f"VERSION: { common.VERSION }")
-	print("LOADING...")
+def init() -> float:
+	"""
+	Initalize KanaSuru
+	   - Load necessary assets
+	"""
+	start: float = time.time()
 	with open("animCJK/graphicsJaKana.txt", "r") as file:
 		line_count: int = 0
 		for data in file.read().split('\n'):
@@ -43,7 +45,8 @@ def init():
 			if data.isspace() or data in (None, ""):
 				continue
 			try:
-				KANA["META"]["GRAPHICS"].append(json.loads(data))
+				data = json.loads(data)
+				KANA["META"]["GRAPHICS"][ord(data["character"])] = data
 			except json.decoder.JSONDecodeError:
 				print(f"Data is: {data}")
 				print(f"Line Count: {line_count}")
@@ -55,7 +58,8 @@ def init():
 			if data.isspace() or data in (None, ""):
 				continue
 			try:
-				KANA["META"]["GRAPHICS"].append(json.loads(data))
+				data = json.loads(data)
+				KANA["META"]["GRAPHICS"][ord(data["character"])] = data
 			except json.decoder.JSONDecodeError:
 				print(f"Data is: {data}")
 				print(f"Line Count: {line_count}")
@@ -67,16 +71,27 @@ def init():
 			if data.isspace() or data in (None, ""):
 				continue
 			try:
-				KANA["META"]["DICT"].append(json.loads(data))
+				data = json.loads(data)
+				KANA["META"]["DICT"][ord(data["character"])] = data
 			except json.decoder.JSONDecodeError:
 				print(f"Data is: {data}")
 				print(f"Line Count: {line_count}")
 				exit()
-	print("KANA...")
 	for each in os.listdir("animCJK/svgsJaKana"):
 		with open(f"animCJK/svgsJaKana/{each}", "r") as file:
 			KANA["KANA"][each.split(".")[0]] = file.read()
-	print("KANJI...")
 	for each in os.listdir("animCJK/svgsJa"):
 		with open(f"animCJK/svgsJa/{each}", "r") as file:
 			KANA["KANJI"][each.split(".")[0]] = file.read()
+	end: float = time.time()
+	return end - start
+
+
+def test_for_deps():
+	"""Attempt to import necessary deps"""
+	try:
+		import cairo
+		import kivy
+	except ImportError:
+		return False
+	return True
